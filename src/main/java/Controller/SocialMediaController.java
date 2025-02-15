@@ -13,10 +13,10 @@ import io.javalin.http.Context;
  * refer to prior mini-project labs and lecture materials for guidance on how a controller may be built.
  */
 public class SocialMediaController {
-    AccountService accountService;
+    private AccountService accountService;
     public SocialMediaController(){
-        accountService = new AccountService();
-    } 
+        this.accountService = new AccountService();
+    }     
     
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
@@ -42,11 +42,11 @@ public class SocialMediaController {
     private void registerUser (Context context) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(context.body(), Account.class);
-        Account createdAccount = accountService.register(account);
-        if(createdAccount != null){
-            context.json(createdAccount);
-        }else {
+        Account createdAccount = accountService.register(account.getUsername(), account.getPassword());
+        if(createdAccount == null){
             context.status(400);
+        }else {
+            context.json(createdAccount);
         }
     }
 

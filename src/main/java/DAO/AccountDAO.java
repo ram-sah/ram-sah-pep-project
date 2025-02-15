@@ -4,31 +4,59 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import Model.Account;
 import Util.ConnectionUtil;
 
 public class AccountDAO {
-    
-    public Account registerAccount(Account account){
-        Connection con = ConnectionUtil.getConnection();
-        
-        try {
-            String sql = "INSERT INTO Account (username, password) VALUES(?, ?)";
-            PreparedStatement preparedStatement = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+    private Connection connection;
+    public AccountDAO(Connection connection){
+        this.connection = connection;
+    }
 
-            preparedStatement.setString(1, account.getUsername());
-            preparedStatement.setString(2, account.getPassword());
-            preparedStatement.executeUpdate();
+    public AccountDAO() {
+        
+    }
+
+    //A method to check, if user already exit
+    public boolean userExists(String username){
+        String qry = "SELECT COUNT(*) FROM Account WHERE username = ?";
+        try (Connection conn = ConnectionUtil.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(qry)){
+            preparedStatement.setString(1, username);
 
             ResultSet rs = preparedStatement.executeQuery();
             if(rs.next()){
-                account.setAccount_id(rs.getInt("account_id"));
-                return account;
+                return rs.getInt(1) > 0;
             }
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
-        } catch (Exception e) {
+    //Register account
+    public Account registerAccount(Account account){
+        if(userExists(account.getUsername())){
+            return null; //User already exist
+        }
+        String sql = "INSERT INTO Account (username, password) VALUES(?, ?)";
+        
+        try (Connection con = ConnectionUtil.getConnection();
+            PreparedStatement preparedStatement = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            preparedStatement.setString(1, account.getUsername());
+            preparedStatement.setString(2, account.getPassword());
+            int affectedRows = preparedStatement.executeUpdate();
+
+            if(affectedRows > 0){
+            ResultSet rs = preparedStatement.getGeneratedKeys();
+            if(rs.next()){
+                account.setAccount_id(rs.getInt(1));
+                return account;
+                }
+            }
+        } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
         return null;
