@@ -4,18 +4,23 @@ import DAO.AccountDAO;
 import Model.Account;
 
 public class AccountService {
-    static AccountDAO accountDAO;
+    AccountDAO accountDAO;
 
     public AccountService(){
         accountDAO  = new AccountDAO();
     }
 
-    public static Account register(Account account){
+    //Register account
+    public Account register(Account account){
         if(account.getUsername().isBlank() || account.getPassword().length() < 4){
             return null;
         }
         return accountDAO.registerAccount(account);
-        
+    }
+
+    //Login account
+    public Account login(String username, String password){
+        return accountDAO.login(username, password);
     }
     
 }

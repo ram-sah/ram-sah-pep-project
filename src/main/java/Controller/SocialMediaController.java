@@ -25,8 +25,10 @@ public class SocialMediaController {
      */
     public Javalin startAPI() {
         Javalin app = Javalin.create();
-        app.post("register", this::registerUser);
-        app.get("messages", this::getAllMessages);
+        app.post("/register", this::registerUser);
+        app.post("/login", this::loginUser);
+
+        app.get("/messages", this::getAllMessages);
 
         return app;
     }
@@ -40,13 +42,26 @@ public class SocialMediaController {
     private void registerUser (Context context) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(context.body(), Account.class);
-        Account createdAccount = AccountService.register(account);
+        Account createdAccount = accountService.register(account);
         if(createdAccount != null){
             context.json(createdAccount);
         }else {
             context.status(400);
         }
     }
+
+    //Login user
+    private void loginUser (Context context) throws JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        Account account = mapper.readValue(context.body(), Account.class);
+        Account loggedIn = accountService.login(account.getUsername(), account.getPassword());
+        if(loggedIn != null){
+            context.json(loggedIn);
+        }else {
+            context.status(401);
+        }
+    }
+
     //get all messages
     private void getAllMessages(Context context) {
         context.json("sample text");

@@ -3,12 +3,14 @@ package DAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import Model.Account;
 import Util.ConnectionUtil;
 
 public class AccountDAO {
+    
     public Account registerAccount(Account account){
         Connection con = ConnectionUtil.getConnection();
         
@@ -32,6 +34,25 @@ public class AccountDAO {
         return null;
     }
 
+// Login account
+    public Account login(String username, String password){
+    String sql = "SELECT * FROM Account WHERE username = ? AND password = ?";
+    try (Connection conn = ConnectionUtil.getConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+        preparedStatement.setString(1, username);
+        preparedStatement.setString(2, password);
 
+        ResultSet rs = preparedStatement.executeQuery();
+        if(rs.next()){
+            return new Account(rs.getInt("account_id"), rs.getString("username"), rs.getString("password"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
     
+
+
+
 }
