@@ -3,7 +3,9 @@ package Controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import Service.AccountService;
+import Service.MessageService;
 import Model.Account;
+import Model.Message;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
@@ -14,10 +16,13 @@ import io.javalin.http.Context;
  */
 public class SocialMediaController {
     private AccountService accountService;
+    private MessageService messageService;
+
     public SocialMediaController(){
         this.accountService = new AccountService();
+        this.messageService = new MessageService();
     }     
-    
+
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
      * suite must receive a Javalin object from this method.
@@ -27,7 +32,7 @@ public class SocialMediaController {
         Javalin app = Javalin.create();
         app.post("/register", this::registerUser);
         app.post("/login", this::loginUser);
-
+        app.post("/messages", this::createMessage);
         app.get("/messages", this::getAllMessages);
 
         return app;
@@ -62,9 +67,22 @@ public class SocialMediaController {
         }
     }
 
+    //Create a message
+    private void createMessage (Context context) throws JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        Message message = mapper.readValue(context.body(), Message.class);
+        Message created = messageService.createMessage(message);
+        if(created != null){
+            context.json(created);
+        }else {
+            context.status(400);
+        }
+    }
+
     //get all messages
     private void getAllMessages(Context context) {
-        context.json("sample text");
+        context.json(messageService.getAllMessages());
+        
     }
 
 
