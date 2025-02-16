@@ -8,24 +8,25 @@ import java.sql.SQLException;
 import Model.Message;
 import Util.ConnectionUtil;
 import java.util.*;
+import java.sql.Statement;
 
 public class MessageDAO {
 
     //Create message
     public Message createMessage(Message message){
-        String sql = "INSERT INTO Message (posted_by, message_text, time_posted_epoch) VALUES(?, ?, ?) RETURNING message_id";
+        String sql = "INSERT INTO Message (posted_by, message_text, time_posted_epoch) VALUES(?, ?, ?)";
         
         try (Connection conn = ConnectionUtil.getConnection();
-            PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             preparedStatement.setInt(1, message.getPosted_by());
             preparedStatement.setString(2, message.getMessage_text());
             preparedStatement.setLong(3, message.getTime_posted_epoch());
-            // preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
 
-            ResultSet rs = preparedStatement.executeQuery();
+            ResultSet rs = preparedStatement.getGeneratedKeys();
             if(rs.next()){
-                message.setMessage_id(rs.getInt("message_id"));
+                message.setMessage_id(rs.getInt(1));
                 return message;
             }
         } catch (SQLException e) {
