@@ -1,6 +1,9 @@
 package Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import Service.AccountService;
 import Service.MessageService;
@@ -37,6 +40,7 @@ public class SocialMediaController {
         app.get("/messages/{message_id}", this::getMessageById);
         app.delete("/messages/{message_id}", this:: deletMessageById);
         app.patch("/messages/{message_id}", this::updateMessage);
+        app.get("/accounts/{account_id}/messages", this::getMessageByUser);
 
         return app;
     }
@@ -117,5 +121,23 @@ public class SocialMediaController {
         context.status(messageService.updateMessage(id, message.getMessage_text()) ? 200 : 400);
     }
     
+    // get message by userID
+    private void getMessageByUser(Context context){
+        int id = Integer.parseInt(context.pathParam("account_id"));
+        try {
+            List<Message> getMsgById = messageService.getAllMessagesByUser(id);
+            if(getMsgById != null){
+                context.json(getMsgById);
+            }else {
+                context.json("{}");
+            }
+
+        } catch (Exception e) {
+            context.status(400).result("Invalid JSON format");
+        }
+
+    }
+
+
 
 }

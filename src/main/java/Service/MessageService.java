@@ -38,4 +38,11 @@ public class MessageService {
      public boolean updateMessage(int messageId, String newText) {
         return !newText.isBlank() && newText.length() <= 255 && messageDAO.updateMessage(messageId, newText);
     }
+
+    //Retrive all message written by particular user
+      public List<Message> getAllMessagesByUser(int id){
+        return messageDAO.getMessageByUserId(id);
+    }
+
+
 }

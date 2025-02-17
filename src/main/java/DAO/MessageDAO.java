@@ -18,7 +18,7 @@ public class MessageDAO {
         String sql = "INSERT INTO Message (posted_by, message_text, time_posted_epoch) VALUES(?, ?, ?)";
         
         try (Connection conn = ConnectionUtil.getConnection()){
-            
+
             //Check if user exists
             try(PreparedStatement userStmt = conn.prepareStatement(userSql)){
                 userStmt.setInt(1, message.getPosted_by());
@@ -137,6 +137,31 @@ public class MessageDAO {
         }
         return false;
     }
+
+    //Retrive all message written by particular user
+    public List<Message> getMessageByUserId(int id) {
+        List<Message> messages = new ArrayList<>();
+        String sql = "SELECT * FROM Message WHERE posted_by = ?";
+        try (Connection conn = ConnectionUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Message message = new Message(
+                        rs.getInt("message_id"),
+                        rs.getInt("posted_id"),
+                        rs.getString("message_text"),
+                        rs.getLong("time_posted_epoch")
+                );
+                messages.add(message);
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return messages;
+    }
+
 
 
 }
