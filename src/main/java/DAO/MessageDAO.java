@@ -14,25 +14,40 @@ public class MessageDAO {
 
     //Create message
     public Message createMessage(Message message){
+        String userSql = "SELECT 1 FROM Account WHERE ACCOUNT_ID = ? ";
         String sql = "INSERT INTO Message (posted_by, message_text, time_posted_epoch) VALUES(?, ?, ?)";
         
-        try (Connection conn = ConnectionUtil.getConnection();
-            PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = ConnectionUtil.getConnection()){
             
-            preparedStatement.setInt(1, message.getPosted_by());
-            preparedStatement.setString(2, message.getMessage_text());
-            preparedStatement.setLong(3, message.getTime_posted_epoch());
-            preparedStatement.executeUpdate();
+            //Check if user exists
+            try(PreparedStatement userStmt = conn.prepareStatement(userSql)){
+                userStmt.setInt(1, message.getPosted_by());
+                try (ResultSet rs = userStmt.executeQuery()){
+                    if (!rs.next()){
+                        return null;
+                    }
+                }
+            }
+        
+            //Insert message only if user exist 
+            try (PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                
+                preparedStatement.setInt(1, message.getPosted_by());
+                preparedStatement.setString(2, message.getMessage_text());
+                preparedStatement.setLong(3, message.getTime_posted_epoch());
+                preparedStatement.executeUpdate();
 
-            ResultSet rs = preparedStatement.getGeneratedKeys();
-            if(rs.next()){
-                message.setMessage_id(rs.getInt(1));
-                return message;
+                ResultSet rs = preparedStatement.getGeneratedKeys();
+                if(rs.next()){
+                    message.setMessage_id(rs.getInt(1));
+                    return message;
+                }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+            return null;
         }
-        return message;
+        return null;
     }
 
     // Get All Messages
