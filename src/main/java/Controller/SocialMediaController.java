@@ -36,6 +36,7 @@ public class SocialMediaController {
         app.get("/messages", this::getAllMessages);
         app.get("/messages/{message_id}", this::getMessageById);
         app.delete("/messages/{message_id}", this:: deletMessageById);
+        app.patch("/messages/{message_id}", this::updateMessage);
 
         return app;
     }
@@ -109,7 +110,12 @@ public class SocialMediaController {
         }
     }
 
-
+    //Update message
+    private void updateMessage(Context context) {
+        int id = Integer.parseInt(context.pathParam("message_id"));
+        Message message = context.bodyAsClass(Message.class);
+        context.status(messageService.updateMessage(id, message.getMessage_text()) ? 200 : 400);
+    }
     
 
 }
