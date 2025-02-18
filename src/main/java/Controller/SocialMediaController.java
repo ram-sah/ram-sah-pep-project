@@ -110,7 +110,7 @@ public class SocialMediaController {
         if(del_msg != null){
             context.json(del_msg);
         }else {
-            context.json("{}");
+            context.status( 200);
         }
     }
 
