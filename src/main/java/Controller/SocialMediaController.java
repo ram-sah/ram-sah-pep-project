@@ -97,9 +97,10 @@ public class SocialMediaController {
         Message getMsgById = messageService.getMessageById(message_id);
 
         if(getMsgById != null){
+            context.status( 200);
             context.json(getMsgById);
         }else {
-            context.json("{}");
+            context.status(200);
         }
     }
 
@@ -108,6 +109,7 @@ public class SocialMediaController {
         int del_id = Integer.parseInt(context.pathParam("message_id")); 
         Message del_msg = messageService.deletMessageById(del_id);
         if(del_msg != null){
+            context.status( 200);
             context.json(del_msg);
         }else {
             context.status( 200);
@@ -118,7 +120,15 @@ public class SocialMediaController {
     private void updateMessage(Context context) {
         int id = Integer.parseInt(context.pathParam("message_id"));
         Message message = context.bodyAsClass(Message.class);
-        context.status(messageService.updateMessage(id, message.getMessage_text()) ? 200 : 400);
+
+        if (messageService.updateMessage(id, message.getMessage_text())) {
+            context.status(200);
+            // Retrieve the updated message
+            Message updatedMessage = messageService.getMessageById(id); 
+            context.json(updatedMessage); 
+        } else {
+            context.status(400);
+        }
     }
     
     // get message by userID
